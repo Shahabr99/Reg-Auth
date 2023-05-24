@@ -1,0 +1,7 @@
+{% extends 'base.html' %} {% block content %}
+<h1>Create an account</h1>
+<form action="" method="">
+  {{ form.hidden_tag() }} {% for field in form if field.widget.input_type() !=
+  'hidden' %} {{field.label}}{{field}} {% endfor %}
+</form>
+{% endblock %}
