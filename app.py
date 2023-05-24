@@ -10,7 +10,10 @@ app.config['SQLALCHEMY_ECHO'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 app.debug = True
-connect_db(app)
+
+with app.app_context():
+    connect_db(app)
+    # db.create_all()
 
 
 
