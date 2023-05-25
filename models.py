@@ -13,9 +13,9 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    username = db.Column(db.String(20), primary_key=True, unique=True)
-    password = db.Column(db.Text, nullable=False)
-    email = db.Column(db.Text, unique=True)
+    username = db.Column(db.String(55), primary_key=True, unique=True)
+    password = db.Column(db.String(256), nullable=False)
+    email = db.Column(db.String(100), unique=True)
     firstname = db.Column(db.String(30), nullable=False)
     lastname = db.Column(db.String(30), nullable=False)
 
@@ -28,3 +28,14 @@ class User(db.Model):
         hashed_utf8 = hashed.decode("utf8")
 
         return hashed_utf8
+
+
+    @classmethod
+    def authenticate(cls, username, password):
+        user = User.query.filter_by(username=username).first()
+
+        if user and bcrypt.check_password_hash(user.password, password):
+            return user
+        else:
+            return False
+

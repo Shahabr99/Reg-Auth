@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, session, flash
 from models import db, User, connect_db
-from forms import SignupForm
+from forms import SignupForm, LoginForm
 
 app = Flask(__name__)
 
@@ -13,7 +13,7 @@ app.debug = True
 
 with app.app_context():
     connect_db(app)
-    # db.create_all()
+    db.create_all()
 
 
 
@@ -36,7 +36,7 @@ def show_form():
 
         hashed_pwd = User.register(username, password)
 
-        new_user = User(firstname=firstname, lastname=lastname, email=email, username=username, password=hashed_pwd)
+        new_user = User(username=username, password=hashed_pwd, email=email,  firstname=firstname, lastname=lastname)
         
         db.session.add(new_user)
         db.session.commit()
@@ -49,3 +49,23 @@ def show_form():
 @app.route('/secret')
 def show_secret():
     return render_template('secret.html')
+
+
+@app.route('/login', methods=["GET", "POST"])
+def show_login():
+    """renders the login form"""
+    form = LoginForm()
+    if form.validate_on_submit:
+        username = form.username.data
+        password = form.password.data
+        session['username'] = username
+
+        user = User.authenticate(username, password)
+        if user:
+            flash("Welcome back!")
+            session['username'] == user.username
+            return redirect('/secret')
+        else:
+            form.username.errors = ['Invalid username/password']
+
+    return render_template('login.html', form=form)
