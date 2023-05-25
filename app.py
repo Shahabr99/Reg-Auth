@@ -40,7 +40,7 @@ def show_form():
         
         db.session.add(new_user)
         db.session.commit()
-
+        flash("signing up successful!", "success")
         return redirect('/secret')
 
     return render_template('signup.html', form=form)
@@ -48,24 +48,34 @@ def show_form():
 
 @app.route('/secret')
 def show_secret():
-    return render_template('secret.html')
+    if 'username' not in session:
+        
+        return redirect('/')
+    else:
+        return render_template('secret.html')
 
 
 @app.route('/login', methods=["GET", "POST"])
 def show_login():
     """renders the login form"""
     form = LoginForm()
-    if form.validate_on_submit:
+    if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
         session['username'] = username
 
         user = User.authenticate(username, password)
         if user:
-            flash("Welcome back!")
+            flash(f"Welcome back {{user.name}}!", 'success')
             session['username'] == user.username
             return redirect('/secret')
         else:
             form.username.errors = ['Invalid username/password']
 
     return render_template('login.html', form=form)
+
+
+@app.route('/logout')
+def logout():
+    session.pop('username')
+    return redirect('/register')
