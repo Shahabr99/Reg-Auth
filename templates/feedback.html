@@ -1,0 +1,11 @@
+{% extends 'base.html' %} {% block content %}
+<h1 class="display-1 text-uppercase text-center">Leave a feedback</h1>
+<div class="container-md col-md-4">
+  <form class="d-flex flex-column gap-3" action="" method="POST">
+    {{form.hidden_tag()}} {% for field in form if field.widget.input_type !=
+    'hidden' %} {{field.label}}{{field(class_="form-control")}} {% endfor %}
+    <button class="btn btn-primary" type="submit">Submit</button>
+    <a href="" class="btn btn-outline-danger">Cancel</a>
+  </form>
+</div>
+{% endblock %}

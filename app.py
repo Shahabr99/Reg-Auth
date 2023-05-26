@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, session, flash
-from models import db, User, connect_db
-from forms import SignupForm, LoginForm
+from models import db, User, connect_db, Feedback
+from forms import SignupForm, LoginForm, FeedbackForm
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 
@@ -27,32 +28,45 @@ def show_form():
     """user creates an account via loaded form"""
     form = SignupForm()
     if form.validate_on_submit():
+        try:
+            firstname = form.firstname.data
+            lastname = form.lastname.data
+            email = form.email.data
+            username = form.username.data
+            password = form.password.data
+            session['username'] = username
 
-        firstname = form.firstname.data
-        lastname = form.lastname.data
-        email = form.email.data
-        username = form.username.data
-        password = form.password.data
+            hashed_pwd = User.register(username, password)
 
-        hashed_pwd = User.register(username, password)
-
-        new_user = User(username=username, password=hashed_pwd, email=email,  firstname=firstname, lastname=lastname)
+            new_user = User(username=username, password=hashed_pwd, email=email,  firstname=firstname, lastname=lastname)
         
-        db.session.add(new_user)
-        db.session.commit()
-        flash("signing up successful!", "success")
-        return redirect('/secret')
+        
+            db.session.add(new_user)
+            db.session.commit()
+            flash("signing up successful!", "success")
+            return redirect(f'/users/{username}')
+        except IntegrityError:
+            db.session.rollback()
+            return redirect('/register')
 
     return render_template('signup.html', form=form)
 
 
-@app.route('/secret')
-def show_secret():
+@app.route('/users/<username>', methods=["GET", "POST"])
+def show_user(username):
     if 'username' not in session:
-        
         return redirect('/')
-    else:
-        return render_template('secret.html')
+    
+    form = FeedbackForm()
+
+    # if form.validate_on_submit():   
+    topic = form.topic.data
+    text = form.text.data
+    curr_user = User.query.filter_by(username=username).first()
+    feedbacks = Feedback.query.all()
+    return render_template('user.html', user=curr_user, feedbacks=feedbacks)
+    
+
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -62,13 +76,13 @@ def show_login():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        session['username'] = username
+        
 
         user = User.authenticate(username, password)
         if user:
             flash(f"Welcome back {{user.name}}!", 'success')
             session['username'] == user.username
-            return redirect('/secret')
+            return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ['Invalid username/password']
 
@@ -79,3 +93,23 @@ def show_login():
 def logout():
     session.pop('username')
     return redirect('/register')
+
+
+@app.route('/users/<username>/delete')
+def delete_user(username):
+    """deleting user and their feedbacks from database/session"""
+
+    user = User.query.get_or_404(username)
+    
+    feedbacks = Feedback.query.filter_by(username=username).all()
+      
+        
+    for feedback in feedbacks:
+        db.session.delete(feedback)
+    db.session.commit()
+
+
+    session.pop('username')
+    db.session.commit()
+
+    return redirect('/')
