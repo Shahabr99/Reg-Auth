@@ -19,4 +19,4 @@ class LoginForm(FlaskForm):
 class FeedbackForm(FlaskForm):
 
     topic = StringField('Topic:', validators=[InputRequired()])
-    text = TextAreaField('Text:', validators=[InputRequired()], render_kw={'rows': 10, 'cols':50})
+    text = TextAreaField('Text:', validators=[InputRequired()])

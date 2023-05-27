@@ -58,14 +58,12 @@ def show_user(username):
         return redirect('/')
     
     form = FeedbackForm()
-
-    # if form.validate_on_submit():   
+    
     topic = form.topic.data
     text = form.text.data
     curr_user = User.query.filter_by(username=username).first()
-    feedbacks = Feedback.query.all()
+    feedbacks = Feedback.query.filter_by(username=username).all()
     return render_template('user.html', user=curr_user, feedbacks=feedbacks)
-    
 
 
 
@@ -81,7 +79,7 @@ def show_login():
         user = User.authenticate(username, password)
         if user:
             flash(f"Welcome back {{user.name}}!", 'success')
-            session['username'] == user.username
+            session['username'] = user.username
             return redirect(f'/users/{user.username}')
         else:
             form.username.errors = ['Invalid username/password']
@@ -98,18 +96,50 @@ def logout():
 @app.route('/users/<username>/delete')
 def delete_user(username):
     """deleting user and their feedbacks from database/session"""
-
     user = User.query.get_or_404(username)
-    
     feedbacks = Feedback.query.filter_by(username=username).all()
-      
         
     for feedback in feedbacks:
         db.session.delete(feedback)
     db.session.commit()
 
-
     session.pop('username')
     db.session.commit()
 
     return redirect('/')
+
+
+@app.route('/users/<username>/feedback/add', methods=["GET", "POST"])
+def feedback_form(username):
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        title = form.topic.data
+        text = form.text.data
+
+        feedback = Feedback(title=title, content=text, username=username)
+        db.session.add(feedback)
+        db.session.commit()
+
+        return redirect(f'/users/{username}')
+
+    return render_template('feedback.html', username=username, form=form)
+
+
+@app.route('/feedback/<int:id>/update', methods=["GET", "POST"])
+def edit_feedback(id):
+    """editing the posted feedback"""
+
+    feedback = Feedback.query.get_or_404(id)
+    form = FeedbackForm(obj=feedback)
+    user = session.get('username')
+    if form.validate_on_submit():
+        
+        feedback.title = form.topic.data
+        feedback.content = form.text.data
+        db.session.commit()
+
+        return redirect(f'/users/{user}')
+        
+
+    return render_template('edit_feedback.html', form=form)
+

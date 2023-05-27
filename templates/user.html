@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block content %} {% with messages =
 get_flashed_messages(with_categories=True) %} {% endwith %} {% if 'username' not
 in session %}
-<h1>Please log in first</h1>
+<h1 class="text-center display-2">Please log in first</h1>
 {% endif %} {% if 'username' in session %}
 <div>
   <h1 class="display-1 text-center">{{user.firstname}} {{user.lastname}}</h1>
@@ -10,17 +10,26 @@ in session %}
 
 <div class="container-lg col-lg-4 mb-5">
   {% for feedback in feedbacks %}
-  <h3>
-    {{feedback.title}}<a href="" class="btn btn-sm">Edit</a
-    ><a href="" class="btn btn-sm">delete</a>
-  </h3>
-  <p>{{feedback.content}}</p>
+  <div class="container border rounded my-1 p-2">
+    <h3>
+      {{feedback.title}}<a
+        href="/feedback/{{feedback.id}}/update"
+        class="btn btn-sm"
+        >Edit</a
+      ><a href="/feedback/{{feedback.id}}/delete" class="btn btn-sm">delete</a>
+    </h3>
+    <p>{{feedback.content}}</p>
+  </div>
   {% endfor %}
 </div>
-{% endif %}
+
 <div class="d-flex justify-content-center align-items-center">
   <div class="">
-    <a href="/feedback" class="btn btn-primary text-light">Add feedback</a>
+    <a
+      href="/users/{{user.username}}/feedback/add"
+      class="btn btn-primary text-light"
+      >Add feedback</a
+    >
     <a href="/logout" class="btn btn-info">Logout</a>
 
     <a href="/users/{{user.username}}/delete" class="btn btn-danger"
@@ -28,5 +37,4 @@ in session %}
     >
   </div>
 </div>
-
-{% endblock %}
+{% endif %} {% endblock %}

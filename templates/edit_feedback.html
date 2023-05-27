@@ -1,0 +1,21 @@
+{% extends 'base.html' %} {% block content %} {% if 'username' not in session %}
+<h2>Please login first</h2>
+{% endif %} {% if 'username' in session %}
+<div class="container-md col-md-4">
+  <h1 class="primary text-center text-uppercase">Edit your post</h1>
+  <form method="POST">
+    {{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
+    'hidden' %}
+    <div>
+      {{field.label}}{{ field(class_="form-control") }} {% for err in
+      field.errors %}
+      <span class="text-danger">{{err}}</span>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary text-light mt-3">
+      Submit
+    </button>
+  </form>
+</div>
+{% endif %} {% endblock %}
