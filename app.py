@@ -143,3 +143,15 @@ def edit_feedback(id):
 
     return render_template('edit_feedback.html', form=form)
 
+
+
+@app.route('/feedback/<int:id>/delete')
+def delete_feedback(id):
+    """ delete feedback"""
+    
+    feedback = Feedback.query.get_or_404(id)
+    user = session['username']
+    db.session.delete(feedback)
+    db.session.commit()
+
+    return redirect(f'/users/{user}')
